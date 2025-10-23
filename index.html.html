@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asistente del Tutor Digital</title>
+    
+    <!-- Tailwind CSS para un diseño rápido y responsive -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts para una tipografía profesional -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Iconos para botones -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+    <style>
+        /* Estilos personalizados para complementar Tailwind */
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #1f2937; /* bg-gray-800 */
+        }
+
+        /* Estilo y colores para la barra de scroll */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #374151; /* bg-gray-700 */
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #fb923c; /* orange-400 */
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #f97316; /* orange-500 */
+        }
+
+        /* Placeholder con mejor contraste */
+        ::placeholder {
+            color: #9ca3af; /* gray-400 */
+            opacity: 1; 
+        }
+
+        /* Estilo para los inputs y selects para que coincidan con el tema */
+        .form-element {
+            background-color: #374151; /* bg-gray-700 */
+            border: 1px solid #4b5563; /* border-gray-600 */
+            color: #f3f4f6; /* text-gray-100 */
+            border-radius: 0.375rem; /* rounded-md */
+            padding: 0.5rem 0.75rem;
+            width: 100%;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .form-element:focus {
+            outline: none;
+            border-color: #fb923c; /* orange-400 */
+            box-shadow: 0 0 0 2px #374151, 0 0 0 4px #fb923c;
+        }
+        
+        /* Ajuste para que la tabla no se comprima innecesariamente */
+        .table-responsive-container {
+            overflow-x: auto;
+        }
+        table {
+            min-width: 1650px; /* Ancho mínimo aumentado para la nueva columna */
+        }
+        th {
+            white-space: normal; /* Permite que los títulos largos se dividan */
+            vertical-align: top; /* Alinea los títulos arriba */
+        }
+        td {
+            white-space: nowrap; /* Evita que el texto de las celdas se parta en varias líneas */
+        }
+        td .form-element {
+             min-width: 150px;
+        }
+        .textarea-container {
+            position: relative;
+            min-width: 250px;
+        }
+        .textarea-container textarea {
+            white-space: pre-wrap; /* Permite saltos de línea en el textarea */
+        }
+        .add-timestamp-button {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background-color: #4b5563; /* bg-gray-600 */
+            color: #d1d5db; /* text-gray-300 */
+            border: none;
+            border-radius: 0.25rem;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .add-timestamp-button:hover {
+            background-color: #6b7280; /* bg-gray-500 */
+        }
+
+
+        /* Estilos para los Modales */
+        .modal-backdrop {
+            background-color: rgba(17, 24, 39, 0.8);
+            backdrop-filter: blur(5px);
+        }
+    </style>
+</head>
+<body class="text-gray-200">
+
+    <div class="container mx-auto p-4 md:p-8">
+        
+        <!-- Cabecera de la aplicación -->
+        <header class="mb-8 p-6 bg-gray-900/50 backdrop-blur-sm rounded-lg border border-gray-700 shadow-lg">
+            <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                <div>
+                    <h1 class="text-3xl md:text-4xl font-bold text-white mb-4">Asistente de Tutoría Digital</h1>
+                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
+                        <input type="text" id="tutorName" class="form-element" placeholder="Nombre del tutor/a...">
+                        <input type="text" id="groupName" class="form-element" placeholder="Grupo...">
+                        <input type="text" id="centerName" class="form-element" placeholder="Centro...">
+                        <input type="text" id="courseYear" class="form-element" placeholder="Año del curso...">
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 mt-4 md:mt-0 self-start md:self-center flex-wrap">
+                    <button id="import-button" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-5 rounded-md transition-colors whitespace-nowrap">
+                        <i class="fas fa-users-cog mr-2"></i> Importar Alumnado
+                    </button>
+                    <button id="export-button" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-5 rounded-md transition-colors whitespace-nowrap">
+                        <i class="fas fa-file-excel mr-2"></i> Guardar
+                    </button>
+                    <button id="reset-button" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-5 rounded-md transition-colors whitespace-nowrap">
+                        <i class="fas fa-trash-alt mr-2"></i> Resetear
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Contenedor de la tabla con scroll horizontal para móviles -->
+        <main class="bg-gray-900/50 backdrop-blur-sm rounded-lg border border-gray-700 shadow-lg table-responsive-container p-4">
+            <table class="w-full text-left">
+                <thead class="border-b border-gray-600 text-orange-400">
+                    <tr>
+                        <th class="p-4">#</th>
+                        <th class="p-4">Nombre del Alumno/a</th>
+                        <th class="p-4">Edad</th>
+                        <th class="p-4">Autorización Salida</th>
+                        <th class="p-4">Nombres de los Padres</th>
+                        <th class="p-4">Móvil de contacto a efectos de comunicación</th>
+                        <th class="p-4">Correo Electrónico</th>
+                        <th class="p-4">Registro de Llamadas</th>
+                        <th class="p-4">Registro de reuniones con los padres o tutores</th>
+                    </tr>
+                </thead>
+                <tbody id="student-table-body">
+                    <!-- Las filas de los alumnos se generarán aquí dinámicamente -->
+                    <tr>
+                        <td colspan="9" class="p-8 text-center text-gray-400">
+                            Aún no hay alumnado. Usa el botón "Importar Alumnado" para añadir tu lista.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </main>
+    </div>
+
+    <!-- Modal de Importación -->
+    <div id="import-modal" class="fixed inset-0 z-50 items-center justify-center hidden p-4 modal-backdrop">
+        <div class="bg-gray-800 border border-gray-600 rounded-lg shadow-xl w-full max-w-md p-6 relative">
+            <h2 class="text-2xl font-bold text-blue-400 mb-4">Importar Lista de Alumnado</h2>
+            <p class="text-gray-300 mb-4">Pega tu lista de alumnado aquí (un nombre por línea). Esto reemplazará la lista actual.</p>
+            <textarea id="student-list-input" class="form-element w-full h-48 mb-4" placeholder="Ana García López&#10;Benito Pérez Ruiz&#10;Carla Suárez Martín&#10;..."></textarea>
+            <div class="flex justify-end space-x-4">
+                <button id="process-import-button" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-5 rounded-md transition-colors">Importar Lista</button>
+                <button class="modal-close bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-5 rounded-md transition-colors">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de confirmación para Resetear -->
+    <div id="reset-modal" class="fixed inset-0 z-50 items-center justify-center hidden p-4 modal-backdrop">
+        <div class="bg-gray-800 border border-gray-600 rounded-lg shadow-xl w-full max-w-md p-6 relative">
+            <h2 class="text-2xl font-bold text-red-500 mb-4">Confirmar Acción</h2>
+            <p class="text-gray-300 mb-6">¿Estás seguro de que quieres borrar toda la información? Esta acción no se puede deshacer.</p>
+            <div class="flex justify-end space-x-4">
+                <button id="confirm-reset-button" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-5 rounded-md transition-colors">Sí, Borrar Todo</button>
+                <button class="modal-close bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-5 rounded-md transition-colors">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Alerta (NUEVO) -->
+    <div id="alert-modal" class="fixed inset-0 z-50 items-center justify-center hidden p-4 modal-backdrop">
+        <div class="bg-gray-800 border border-gray-600 rounded-lg shadow-xl w-full max-w-md p-6 relative">
+            <h2 class="text-2xl font-bold text-orange-400 mb-4">Aviso</h2>
+            <p id="alert-message" class="text-gray-300 mb-6">Este es un mensaje de aviso.</p>
+            <div class="flex justify-end space-x-4">
+                <button class="modal-close bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-5 rounded-md transition-colors">Entendido</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- CONSTANTES Y REFERENCIAS ---
+            const STORAGE_KEY = 'tutorStudentDataApp';
+            const courseYearInput = document.getElementById('courseYear');
+            const tutorNameInput = document.getElementById('tutorName');
+            const groupNameInput = document.getElementById('groupName');
+            const centerNameInput = document.getElementById('centerName');
+            const studentTableBody = document.getElementById('student-table-body');
+            
+            // Modales
+            const importModal = document.getElementById('import-modal');
+            const resetModal = document.getElementById('reset-modal');
+            const alertModal = document.getElementById('alert-modal'); // Nuevo
+            const alertMessage = document.getElementById('alert-message'); // Nuevo
+            const importButton = document.getElementById('import-button');
+            const processImportButton = document.getElementById('process-import-button');
+            const studentListInput = document.getElementById('student-list-input');
+            const resetButton = document.getElementById('reset-button');
+            const confirmResetButton = document.getElementById('confirm-reset-button');
+            const exportButton = document.getElementById('export-button');
+
+            // --- DATOS GLOBALES ---
+            let appData = {
+                courseYear: '',
+                tutorName: '',
+                groupName: '',
+                centerName: '',
+                students: {}
+            };
+
+            // --- LÓGICA DE GUARDADO/CARGA DE DATOS ---
+            function saveData() {
+                // Guardar datos de cabecera
+                appData.courseYear = courseYearInput.value;
+                appData.tutorName = tutorNameInput.value;
+                appData.groupName = groupNameInput.value;
+                appData.centerName = centerNameInput.value;
+                
+                // Guardar datos de estudiantes
+                appData.students = {}; // Reiniciar para leer del DOM
+                document.querySelectorAll('#student-table-body tr[data-student-id]').forEach(row => {
+                    const studentId = row.dataset.studentId;
+                    const studentData = {
+                        name: row.cells[0].textContent.trim(),
+                        edad: row.querySelector('[data-field="edad"]').value,
+                        autorizacion: row.querySelector('[data-field="autorizacion"]').value,
+                        tutorNombre: row.querySelector('[data-field="tutorNombre"]').value,
+                        tutorMovil: row.querySelector('[data-field="tutorMovil"]').value,
+                        email: row.querySelector('[data-field="email"]').value,
+                        llamadas: row.querySelector('[data-field="llamadas"]').value,
+                        visitas: row.querySelector('[data-field="visitas"]').value
+                    };
+                    appData.students[studentId] = studentData;
+                });
+                
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+            }
+
+            // --- LÓGICA DE AVISOS (NUEVA) ---
+            function showAlert(message) {
+                alertMessage.textContent = message;
+                alertModal.classList.remove('hidden');
+                alertModal.classList.add('flex');
+            }
+
+            function loadData() {
+                const savedData = localStorage.getItem(STORAGE_KEY);
+                if (savedData) {
+                    appData = JSON.parse(savedData);
+                }
+
+                // Cargar datos de cabecera
+                courseYearInput.value = appData.courseYear || '';
+                tutorNameInput.value = appData.tutorName || '';
+                groupNameInput.value = appData.groupName || '';
+                centerNameInput.value = appData.centerName || '';
+
+                // Cargar y renderizar estudiantes
+                renderStudentTable();
+            }
+
+            // --- RENDERIZADO DE LA TABLA ---
+            function renderStudentTable() {
+                studentTableBody.innerHTML = ''; // Limpiar tabla
+                const studentIds = Object.keys(appData.students);
+
+                if (studentIds.length === 0) {
+                    studentTableBody.innerHTML = `
+                        <tr>
+                            <td colspan="9" class="p-8 text-center text-gray-400">
+                                Aún no hay alumnado. Usa el botón "Importar Alumnado" para añadir tu lista.
+                            </td>
+                        </tr>`;
+                    return;
+                }
+
+                studentIds.forEach((studentId, index) => {
+                    const studentData = appData.students[studentId];
+                    const newRow = createStudentRow(index + 1, studentId, studentData.name, studentData);
+                    studentTableBody.appendChild(newRow);
+                });
+            }
+
+            /**
+             * Crea un elemento <tr> de un estudiante y le adjunta todos los listeners
+             */
+            function createStudentRow(studentNumber, studentId, name, studentData = {}) {
+                const tr = document.createElement('tr');
+                tr.className = 'border-b border-gray-700 hover:bg-gray-700/50 transition-colors';
+                tr.dataset.studentId = studentId;
+
+                // Función auxiliar para crear celdas con inputs
+                const createCell = (content) => {
+                    const td = document.createElement('td');
+                    td.className = 'p-2';
+                    td.appendChild(content);
+                    return td;
+                };
+
+                // Función auxiliar para crear inputs/selects
+                const createFormField = (tag, type, field, value) => {
+                    const el = document.createElement(tag);
+                    el.className = 'form-element';
+                    el.dataset.field = field;
+                    el.value = value || '';
+                    if (tag === 'input') el.type = type;
+                    
+                    if (tag === 'input') {
+                        // Asignar placeholder específico
+                        switch (field) {
+                            case 'tutorNombre':
+                                el.placeholder = 'Nombres de los padres...';
+                                break;
+                            case 'tutorMovil':
+                                el.placeholder = 'Móvil de comunicación...';
+                                break;
+                            case 'email':
+                                el.placeholder = 'Email de contacto...';
+                                break;
+                            default:
+                                el.placeholder = '...';
+                        }
+                    }
+
+                    if (tag === 'select') {
+                        let options = [];
+                        if (field === 'edad') options = ['', 'Menor de edad', 'Mayor de edad'];
+                        if (field === 'autorizacion') options = ['', 'Sí', 'No'];
+                        el.innerHTML = options.map(opt => `<option value="${opt}">${opt}</option>`).join('');
+                        el.value = value || ''; // Asegurarse de que el valor se setea después de crear options
+                    }
+                    el.addEventListener('input', saveData); // Guardar en CADA cambio
+                    return el;
+                };
+                
+                // 0. Número
+                const tdNum = document.createElement('td');
+                tdNum.className = 'p-4 text-center text-gray-400';
+                tdNum.textContent = studentNumber;
+                tr.appendChild(tdNum);
+
+                // 1. Nombre
+                const tdName = document.createElement('td');
+                tdName.className = 'p-4 font-medium text-white';
+                tdName.textContent = name;
+                tr.appendChild(tdName);
+
+                // 2. Edad
+                tr.appendChild(createCell(createFormField('select', '', 'edad', studentData.edad)));
+                // 3. Autorización
+                tr.appendChild(createCell(createFormField('select', '', 'autorizacion', studentData.autorizacion)));
+                // 4. Nombre Tutor
+                tr.appendChild(createCell(createFormField('input', 'text', 'tutorNombre', studentData.tutorNombre)));
+                // 5. Móvil Tutor
+                tr.appendChild(createCell(createFormField('input', 'tel', 'tutorMovil', studentData.tutorMovil)));
+                // 6. Email
+                tr.appendChild(createCell(createFormField('input', 'email', 'email', studentData.email)));
+
+                // 7. Registro de Llamadas (más complejo)
+                const tdLlamadas = document.createElement('td');
+                tdLlamadas.className = 'p-2';
+                const textareaContainer = document.createElement('div');
+                textareaContainer.className = 'textarea-container';
+                
+                const textarea = document.createElement('textarea');
+                textarea.className = 'form-element h-24';
+                textarea.dataset.field = 'llamadas';
+                textarea.placeholder = 'Añadir fecha con el botón...';
+                textarea.value = studentData.llamadas || '';
+                textarea.addEventListener('input', saveData);
+
+                const timestampButton = document.createElement('button');
+                timestampButton.className = 'add-timestamp-button';
+                timestampButton.title = 'Añadir Fecha y Hora Actual';
+                timestampButton.innerHTML = '<i class="fas fa-clock"></i> Añadir Fecha';
+                timestampButton.addEventListener('click', () => addTimestamp(textarea));
+                
+                textareaContainer.appendChild(textarea);
+                textareaContainer.appendChild(timestampButton);
+                tdLlamadas.appendChild(textareaContainer);
+                tr.appendChild(tdLlamadas);
+                
+                // 8. Registro de Visitas (copia de la lógica de llamadas)
+                const tdVisitas = document.createElement('td');
+                tdVisitas.className = 'p-2';
+                const textareaContainerVisitas = document.createElement('div');
+                textareaContainerVisitas.className = 'textarea-container';
+                
+                const textareaVisitas = document.createElement('textarea');
+                textareaVisitas.className = 'form-element h-24';
+                textareaVisitas.dataset.field = 'visitas';
+                textareaVisitas.placeholder = 'Añadir fecha con el botón...';
+                textareaVisitas.value = studentData.visitas || '';
+                textareaVisitas.addEventListener('input', saveData);
+
+                const timestampButtonVisitas = document.createElement('button');
+                timestampButtonVisitas.className = 'add-timestamp-button';
+                timestampButtonVisitas.title = 'Añadir Fecha y Hora Actual';
+                timestampButtonVisitas.innerHTML = '<i class="fas fa-clock"></i> Añadir Fecha';
+                timestampButtonVisitas.addEventListener('click', () => addTimestamp(textareaVisitas));
+                
+                textareaContainerVisitas.appendChild(textareaVisitas);
+                textareaContainerVisitas.appendChild(timestampButtonVisitas);
+                tdVisitas.appendChild(textareaContainerVisitas);
+                tr.appendChild(tdVisitas);
+                
+                return tr;
+            }
+
+            // --- LÓGICA BOTÓN TIMESTAMP ---
+            function addTimestamp(textarea) {
+                const now = new Date();
+                const day = String(now.getDate()).padStart(2, '0');
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const year = now.getFullYear();
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                const timestamp = `${day}/${month}/${year} ${hours}:${minutes} - `;
+                
+                if (textarea.value.trim() !== '') {
+                    textarea.value += '\n' + timestamp;
+                } else {
+                    textarea.value = timestamp;
+                }
+                textarea.focus();
+                // Disparar evento 'input' para que se guarde
+                textarea.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+
+            // --- LÓGICA DE IMPORTACIÓN ---
+            importButton.addEventListener('click', () => {
+                studentListInput.value = ''; // Limpiar el textarea
+                importModal.classList.remove('hidden');
+                importModal.classList.add('flex');
+            });
+
+            processImportButton.addEventListener('click', () => {
+                const names = studentListInput.value.split('\n')
+                    .map(name => name.trim())
+                    .filter(name => name.length > 0);
+                
+                if (names.length === 0) {
+                    showAlert('No se han introducido nombres. Pega al menos un nombre en la lista para importar.'); // CAMBIO: de alert() a showAlert()
+                    return;
+                }
+
+                // Borrar datos de estudiantes antiguos y renderizar los nuevos
+                appData.students = {}; // Borrar estudiantes del objeto de datos
+                names.forEach(name => {
+                    const studentId = crypto.randomUUID();
+                    appData.students[studentId] = { name: name }; // Añadir nuevos estudiantes
+                });
+                
+                renderStudentTable(); // Renderizar la tabla con los nuevos estudiantes
+                saveData(); // Guardar la nueva estructura
+                
+                importModal.classList.add('hidden');
+                importModal.classList.remove('flex');
+            });
+
+
+            // --- LÓGICA DE EXPORTAR A CSV ---
+            exportButton.addEventListener('click', () => {
+                const headers = ["#", "Nombre del Alumno/a", "Edad", "Autorización Salida", "Nombres de los Padres", "Móvil de contacto a efectos de comunicación", "Correo Electrónico", "Registro de Llamadas", "Registro de reuniones con los padres o tutores"];
+                const escapeCsvCell = (cell) => {
+                    let cellString = String(cell ?? '');
+                    if (cellString.search(/("|,|\n)/g) >= 0) {
+                        cellString = `"${cellString.replace(/"/g, '""')}"`;
+                    }
+                    return cellString;
+                };
+
+                const headerInfo = [
+                    `Centro:;${escapeCsvCell(appData.centerName)}`,
+                    `Grupo:;${escapeCsvCell(appData.groupName)}`,
+                    `Tutor/a:;${escapeCsvCell(appData.tutorName)}`,
+                    `Año del curso:;${escapeCsvCell(appData.courseYear)}`,
+                    '' // Línea en blanco para separar
+                ].join('\n');
+
+                const rows = Object.values(appData.students).map((student, index) => [
+                    index + 1,
+                    student.name,
+                    student.edad,
+                    student.autorizacion,
+                    student.tutorNombre,
+                    student.tutorMovil,
+                    student.email,
+                    student.llamadas,
+                    student.visitas
+                ].map(escapeCsvCell).join(';')); // CAMBIO: de ',' a ';'
+
+                const csvContent = [headerInfo, headers.join(';'), ...rows].join('\n'); // CAMBIO: de ',' a ';'
+                const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement("a");
+                link.href = URL.createObjectURL(blob);
+                const courseName = appData.courseYear.replace(/\s/g, '_') || 'datos';
+                link.download = `registro_tutoría_${courseName}.csv`;
+                link.click();
+                URL.revokeObjectURL(link.href);
+            });
+
+            // --- LÓGICA PARA MODALES Y RESETEO ---
+            resetButton.addEventListener('click', () => {
+                resetModal.classList.remove('hidden');
+                resetModal.classList.add('flex');
+            });
+
+            confirmResetButton.addEventListener('click', () => {
+                localStorage.removeItem(STORAGE_KEY);
+                location.reload();
+            });
+
+            document.querySelectorAll('.modal-close').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    e.target.closest('.modal-backdrop').classList.add('hidden');
+                    e.target.closest('.modal-backdrop').classList.remove('flex');
+                });
+            });
+
+            // --- INICIALIZACIÓN ---
+            // Listeners para guardar datos de cabecera
+            courseYearInput.addEventListener('input', saveData);
+            tutorNameInput.addEventListener('input', saveData);
+            groupNameInput.addEventListener('input', saveData);
+            centerNameInput.addEventListener('input', saveData);
+
+            // Carga inicial
+            loadData();
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
