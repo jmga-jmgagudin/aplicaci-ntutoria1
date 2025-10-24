@@ -5,46 +5,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Asistente del Tutor Digital</title>
     
-    <!-- Tailwind CSS para un diseño rápido y responsive -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Google Fonts para una tipografía profesional -->
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-    <!-- Iconos para botones -->
+    <!-- Iconos -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 
     <style>
-        /* Estilos personalizados para complementar Tailwind */
+        /* Estilos personalizados */
         body {
             font-family: 'Roboto', sans-serif;
             background-color: #1f2937; /* bg-gray-800 */
         }
 
-        /* Estilo y colores para la barra de scroll */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #374151; /* bg-gray-700 */
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #fb923c; /* orange-400 */
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #f97316; /* orange-500 */
-        }
+        /* Barra de scroll */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #374151; /* bg-gray-700 */ }
+        ::-webkit-scrollbar-thumb { background: #fb923c; /* orange-400 */ border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #f97316; /* orange-500 */ }
 
-        /* Placeholder con mejor contraste */
-        ::placeholder {
-            color: #9ca3af; /* gray-400 */
-            opacity: 1; 
-        }
+        /* Placeholders */
+        ::placeholder { color: #9ca3af; /* gray-400 */ opacity: 1; }
 
-        /* Estilo para los inputs y selects para que coincidan con el tema */
+        /* Estilo para inputs y selects */
         .form-element {
             background-color: #374151; /* bg-gray-700 */
             border: 1px solid #4b5563; /* border-gray-600 */
@@ -60,30 +47,16 @@
             box-shadow: 0 0 0 2px #374151, 0 0 0 4px #fb923c;
         }
         
-        /* Ajuste para que la tabla no se comprima innecesariamente */
-        .table-responsive-container {
-            overflow-x: auto;
-        }
-        table {
-            min-width: 1650px; /* Ancho mínimo aumentado para la nueva columna */
-        }
-        th {
-            white-space: normal; /* Permite que los títulos largos se dividan */
-            vertical-align: top; /* Alinea los títulos arriba */
-        }
-        td {
-            white-space: nowrap; /* Evita que el texto de las celdas se parta en varias líneas */
-        }
-        td .form-element {
-             min-width: 150px;
-        }
-        .textarea-container {
-            position: relative;
-            min-width: 250px;
-        }
-        .textarea-container textarea {
-            white-space: pre-wrap; /* Permite saltos de línea en el textarea */
-        }
+        /* Ajustes de la tabla */
+        .table-responsive-container { overflow-x: auto; }
+        table { min-width: 1650px; }
+        th { white-space: normal; vertical-align: top; }
+        td { white-space: nowrap; }
+        td .form-element { min-width: 150px; }
+        .textarea-container { position: relative; min-width: 250px; }
+        .textarea-container textarea { white-space: pre-wrap; }
+        
+        /* Botón de timestamp */
         .add-timestamp-button {
             position: absolute;
             top: 0.5rem;
@@ -97,12 +70,9 @@
             cursor: pointer;
             transition: background-color 0.2s;
         }
-        .add-timestamp-button:hover {
-            background-color: #6b7280; /* bg-gray-500 */
-        }
+        .add-timestamp-button:hover { background-color: #6b7280; /* bg-gray-500 */ }
 
-
-        /* Estilos para los Modales */
+        /* Modales */
         .modal-backdrop {
             background-color: rgba(17, 24, 39, 0.8);
             backdrop-filter: blur(5px);
@@ -125,21 +95,34 @@
                         <input type="text" id="courseYear" class="form-element" placeholder="Año del curso...">
                     </div>
                 </div>
-                <div class="flex items-center gap-2 mt-4 md:mt-0 self-start md:self-center flex-wrap">
-                    <button id="import-button" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-5 rounded-md transition-colors whitespace-nowrap">
-                        <i class="fas fa-users-cog mr-2"></i> Importar Alumnado
-                    </button>
-                    <button id="export-button" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-5 rounded-md transition-colors whitespace-nowrap">
-                        <i class="fas fa-file-excel mr-2"></i> Guardar
-                    </button>
-                    <button id="reset-button" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-5 rounded-md transition-colors whitespace-nowrap">
-                        <i class="fas fa-trash-alt mr-2"></i> Resetear
-                    </button>
+                <!-- Botonera de acciones -->
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mt-4 md:mt-0 self-start md:self-center w-full md:w-auto">
+                    <!-- Fila 1: Importar/Exportar -->
+                    <div class="flex flex-col sm:flex-row gap-2 w-full">
+                        <button id="import-button" class="w-full sm:w-auto text-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-5 rounded-md transition-colors whitespace-nowrap">
+                            <i class="fas fa-users-cog mr-2"></i> Importar Alumnado
+                        </button>
+                        <button id="export-csv-button" class="w-full sm:w-auto text-center bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-5 rounded-md transition-colors whitespace-nowrap">
+                            <i class="fas fa-file-excel mr-2"></i> Exportar (CSV)
+                        </button>
+                    </div>
+                     <!-- Fila 2: Guardar/Cargar/Resetear -->
+                    <div class="flex flex-col sm:flex-row gap-2 w-full">
+                         <button id="save-json-button" class="w-full sm:w-auto text-center bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-2 px-5 rounded-md transition-colors whitespace-nowrap">
+                            <i class="fas fa-save mr-2"></i> Guardar Datos (JSON)
+                        </button>
+                        <button id="load-json-button" class="w-full sm:w-auto text-center bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-5 rounded-md transition-colors whitespace-nowrap">
+                            <i class="fas fa-folder-open mr-2"></i> Cargar Datos (JSON)
+                        </button>
+                        <button id="reset-button" class="w-full sm:w-auto text-center bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-5 rounded-md transition-colors whitespace-nowrap">
+                            <i class="fas fa-trash-alt mr-2"></i> Resetear
+                        </button>
+                    </div>
                 </div>
             </div>
         </header>
 
-        <!-- Contenedor de la tabla con scroll horizontal para móviles -->
+        <!-- Contenedor de la tabla -->
         <main class="bg-gray-900/50 backdrop-blur-sm rounded-lg border border-gray-700 shadow-lg table-responsive-container p-4">
             <table class="w-full text-left">
                 <thead class="border-b border-gray-600 text-orange-400">
@@ -156,7 +139,7 @@
                     </tr>
                 </thead>
                 <tbody id="student-table-body">
-                    <!-- Las filas de los alumnos se generarán aquí dinámicamente -->
+                    <!-- Fila por defecto -->
                     <tr>
                         <td colspan="9" class="p-8 text-center text-gray-400">
                             Aún no hay alumnado. Usa el botón "Importar Alumnado" para añadir tu lista.
@@ -167,6 +150,7 @@
         </main>
     </div>
 
+    <!-- Modales (Importar, Resetear, Alerta) -->
     <!-- Modal de Importación -->
     <div id="import-modal" class="fixed inset-0 z-50 items-center justify-center hidden p-4 modal-backdrop">
         <div class="bg-gray-800 border border-gray-600 rounded-lg shadow-xl w-full max-w-md p-6 relative">
@@ -192,10 +176,10 @@
         </div>
     </div>
 
-    <!-- Modal de Alerta (NUEVO) -->
+    <!-- Modal de Alerta -->
     <div id="alert-modal" class="fixed inset-0 z-50 items-center justify-center hidden p-4 modal-backdrop">
         <div class="bg-gray-800 border border-gray-600 rounded-lg shadow-xl w-full max-w-md p-6 relative">
-            <h2 class="text-2xl font-bold text-orange-400 mb-4">Aviso</h2>
+            <h2 id="alert-title" class="text-2xl font-bold text-orange-400 mb-4">Aviso</h2>
             <p id="alert-message" class="text-gray-300 mb-6">Este es un mensaje de aviso.</p>
             <div class="flex justify-end space-x-4">
                 <button class="modal-close bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-5 rounded-md transition-colors">Entendido</button>
@@ -203,6 +187,8 @@
         </div>
     </div>
 
+    <!-- Input de fichero oculto para cargar JSON -->
+    <input type="file" id="json-file-input" class="hidden" accept=".json">
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -217,14 +203,20 @@
             // Modales
             const importModal = document.getElementById('import-modal');
             const resetModal = document.getElementById('reset-modal');
-            const alertModal = document.getElementById('alert-modal'); // Nuevo
-            const alertMessage = document.getElementById('alert-message'); // Nuevo
+            const alertModal = document.getElementById('alert-modal');
+            const alertTitle = document.getElementById('alert-title');
+            const alertMessage = document.getElementById('alert-message');
+            
+            // Botones
             const importButton = document.getElementById('import-button');
             const processImportButton = document.getElementById('process-import-button');
             const studentListInput = document.getElementById('student-list-input');
             const resetButton = document.getElementById('reset-button');
             const confirmResetButton = document.getElementById('confirm-reset-button');
-            const exportButton = document.getElementById('export-button');
+            const exportCsvButton = document.getElementById('export-csv-button'); // Renombrado
+            const saveJsonButton = document.getElementById('save-json-button'); // NUEVO
+            const loadJsonButton = document.getElementById('load-json-button'); // NUEVO
+            const jsonFileInput = document.getElementById('json-file-input'); // NUEVO
 
             // --- DATOS GLOBALES ---
             let appData = {
@@ -235,7 +227,7 @@
                 students: {}
             };
 
-            // --- LÓGICA DE GUARDADO/CARGA DE DATOS ---
+            // --- LÓGICA DE GUARDADO/CARGA DE DATOS (localStorage) ---
             function saveData() {
                 // Guardar datos de cabecera
                 appData.courseYear = courseYearInput.value;
@@ -248,7 +240,7 @@
                 document.querySelectorAll('#student-table-body tr[data-student-id]').forEach(row => {
                     const studentId = row.dataset.studentId;
                     const studentData = {
-                        name: row.cells[0].textContent.trim(),
+                        name: row.querySelector('[data-field="name"]').textContent.trim(), // Actualizado para leer el nombre
                         edad: row.querySelector('[data-field="edad"]').value,
                         autorizacion: row.querySelector('[data-field="autorizacion"]').value,
                         tutorNombre: row.querySelector('[data-field="tutorNombre"]').value,
@@ -263,17 +255,17 @@
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
             }
 
-            // --- LÓGICA DE AVISOS (NUEVA) ---
-            function showAlert(message) {
-                alertMessage.textContent = message;
-                alertModal.classList.remove('hidden');
-                alertModal.classList.add('flex');
-            }
-
             function loadData() {
                 const savedData = localStorage.getItem(STORAGE_KEY);
                 if (savedData) {
-                    appData = JSON.parse(savedData);
+                    try {
+                        appData = JSON.parse(savedData);
+                         // Asegurarse de que la estructura base existe
+                        if (!appData.students) appData.students = {};
+                    } catch (e) {
+                        console.error("Error al parsear localStorage, reseteando datos.", e);
+                        appData = { courseYear: '', tutorName: '', groupName: '', centerName: '', students: {} };
+                    }
                 }
 
                 // Cargar datos de cabecera
@@ -286,10 +278,32 @@
                 renderStudentTable();
             }
 
+            // --- LÓGICA DE AVISOS ---
+            function showAlert(message, title = 'Aviso', type = 'info') {
+                alertTitle.textContent = title;
+                alertMessage.textContent = message;
+                
+                // Resetear colores
+                alertTitle.classList.remove('text-orange-400', 'text-red-500', 'text-green-500');
+
+                if (type === 'error') {
+                    alertTitle.classList.add('text-red-500');
+                } else if (type === 'success') {
+                    alertTitle.classList.add('text-green-500');
+                } else {
+                    alertTitle.classList.add('text-orange-400');
+                }
+
+                alertModal.classList.remove('hidden');
+                alertModal.classList.add('flex');
+            }
+
             // --- RENDERIZADO DE LA TABLA ---
             function renderStudentTable() {
                 studentTableBody.innerHTML = ''; // Limpiar tabla
-                const studentIds = Object.keys(appData.students);
+                
+                // Asegurarse de que appData.students no es nulo o undefined
+                const studentIds = appData.students ? Object.keys(appData.students) : [];
 
                 if (studentIds.length === 0) {
                     studentTableBody.innerHTML = `
@@ -303,20 +317,21 @@
 
                 studentIds.forEach((studentId, index) => {
                     const studentData = appData.students[studentId];
+                    // Si studentData no es válido, saltar
+                    if (!studentData || !studentData.name) {
+                         console.warn(`Datos inválidos para el studentId: ${studentId}`);
+                        return;
+                    }
                     const newRow = createStudentRow(index + 1, studentId, studentData.name, studentData);
                     studentTableBody.appendChild(newRow);
                 });
             }
 
-            /**
-             * Crea un elemento <tr> de un estudiante y le adjunta todos los listeners
-             */
             function createStudentRow(studentNumber, studentId, name, studentData = {}) {
                 const tr = document.createElement('tr');
                 tr.className = 'border-b border-gray-700 hover:bg-gray-700/50 transition-colors';
                 tr.dataset.studentId = studentId;
 
-                // Función auxiliar para crear celdas con inputs
                 const createCell = (content) => {
                     const td = document.createElement('td');
                     td.className = 'p-2';
@@ -324,7 +339,6 @@
                     return td;
                 };
 
-                // Función auxiliar para crear inputs/selects
                 const createFormField = (tag, type, field, value) => {
                     const el = document.createElement(tag);
                     el.className = 'form-element';
@@ -333,19 +347,11 @@
                     if (tag === 'input') el.type = type;
                     
                     if (tag === 'input') {
-                        // Asignar placeholder específico
                         switch (field) {
-                            case 'tutorNombre':
-                                el.placeholder = 'Nombres de los padres...';
-                                break;
-                            case 'tutorMovil':
-                                el.placeholder = 'Móvil de comunicación...';
-                                break;
-                            case 'email':
-                                el.placeholder = 'Email de contacto...';
-                                break;
-                            default:
-                                el.placeholder = '...';
+                            case 'tutorNombre': el.placeholder = 'Nombres de los padres...'; break;
+                            case 'tutorMovil': el.placeholder = 'Móvil de comunicación...'; break;
+                            case 'email': el.placeholder = 'Email de contacto...'; break;
+                            default: el.placeholder = '...';
                         }
                     }
 
@@ -354,7 +360,7 @@
                         if (field === 'edad') options = ['', 'Menor de edad', 'Mayor de edad'];
                         if (field === 'autorizacion') options = ['', 'Sí', 'No'];
                         el.innerHTML = options.map(opt => `<option value="${opt}">${opt}</option>`).join('');
-                        el.value = value || ''; // Asegurarse de que el valor se setea después de crear options
+                        el.value = value || ''; 
                     }
                     el.addEventListener('input', saveData); // Guardar en CADA cambio
                     return el;
@@ -370,6 +376,7 @@
                 const tdName = document.createElement('td');
                 tdName.className = 'p-4 font-medium text-white';
                 tdName.textContent = name;
+                tdName.dataset.field = "name"; // Importante para que saveData lo lea
                 tr.appendChild(tdName);
 
                 // 2. Edad
@@ -383,53 +390,36 @@
                 // 6. Email
                 tr.appendChild(createCell(createFormField('input', 'email', 'email', studentData.email)));
 
-                // 7. Registro de Llamadas (más complejo)
-                const tdLlamadas = document.createElement('td');
-                tdLlamadas.className = 'p-2';
-                const textareaContainer = document.createElement('div');
-                textareaContainer.className = 'textarea-container';
-                
-                const textarea = document.createElement('textarea');
-                textarea.className = 'form-element h-24';
-                textarea.dataset.field = 'llamadas';
-                textarea.placeholder = 'Añadir fecha con el botón...';
-                textarea.value = studentData.llamadas || '';
-                textarea.addEventListener('input', saveData);
+                // Función auxiliar para crear textareas con timestamp
+                const createTimestampTextarea = (field, value) => {
+                    const td = document.createElement('td');
+                    td.className = 'p-2';
+                    const container = document.createElement('div');
+                    container.className = 'textarea-container';
+                    
+                    const textarea = document.createElement('textarea');
+                    textarea.className = 'form-element h-24';
+                    textarea.dataset.field = field;
+                    textarea.placeholder = 'Añadir fecha con el botón...';
+                    textarea.value = value || '';
+                    textarea.addEventListener('input', saveData);
 
-                const timestampButton = document.createElement('button');
-                timestampButton.className = 'add-timestamp-button';
-                timestampButton.title = 'Añadir Fecha y Hora Actual';
-                timestampButton.innerHTML = '<i class="fas fa-clock"></i> Añadir Fecha';
-                timestampButton.addEventListener('click', () => addTimestamp(textarea));
-                
-                textareaContainer.appendChild(textarea);
-                textareaContainer.appendChild(timestampButton);
-                tdLlamadas.appendChild(textareaContainer);
-                tr.appendChild(tdLlamadas);
-                
-                // 8. Registro de Visitas (copia de la lógica de llamadas)
-                const tdVisitas = document.createElement('td');
-                tdVisitas.className = 'p-2';
-                const textareaContainerVisitas = document.createElement('div');
-                textareaContainerVisitas.className = 'textarea-container';
-                
-                const textareaVisitas = document.createElement('textarea');
-                textareaVisitas.className = 'form-element h-24';
-                textareaVisitas.dataset.field = 'visitas';
-                textareaVisitas.placeholder = 'Añadir fecha con el botón...';
-                textareaVisitas.value = studentData.visitas || '';
-                textareaVisitas.addEventListener('input', saveData);
+                    const button = document.createElement('button');
+                    button.className = 'add-timestamp-button';
+                    button.title = 'Añadir Fecha y Hora Actual';
+                    button.innerHTML = '<i class="fas fa-clock"></i> Añadir Fecha';
+                    button.addEventListener('click', () => addTimestamp(textarea));
+                    
+                    container.appendChild(textarea);
+                    container.appendChild(button);
+                    td.appendChild(container);
+                    return td;
+                };
 
-                const timestampButtonVisitas = document.createElement('button');
-                timestampButtonVisitas.className = 'add-timestamp-button';
-                timestampButtonVisitas.title = 'Añadir Fecha y Hora Actual';
-                timestampButtonVisitas.innerHTML = '<i class="fas fa-clock"></i> Añadir Fecha';
-                timestampButtonVisitas.addEventListener('click', () => addTimestamp(textareaVisitas));
-                
-                textareaContainerVisitas.appendChild(textareaVisitas);
-                textareaContainerVisitas.appendChild(timestampButtonVisitas);
-                tdVisitas.appendChild(textareaContainerVisitas);
-                tr.appendChild(tdVisitas);
+                // 7. Registro de Llamadas
+                tr.appendChild(createTimestampTextarea('llamadas', studentData.llamadas));
+                // 8. Registro de Visitas
+                tr.appendChild(createTimestampTextarea('visitas', studentData.visitas));
                 
                 return tr;
             }
@@ -450,13 +440,12 @@
                     textarea.value = timestamp;
                 }
                 textarea.focus();
-                // Disparar evento 'input' para que se guarde
                 textarea.dispatchEvent(new Event('input', { bubbles: true }));
             }
 
-            // --- LÓGICA DE IMPORTACIÓN ---
+            // --- LÓGICA DE IMPORTACIÓN (Alumnado) ---
             importButton.addEventListener('click', () => {
-                studentListInput.value = ''; // Limpiar el textarea
+                studentListInput.value = ''; 
                 importModal.classList.remove('hidden');
                 importModal.classList.add('flex');
             });
@@ -467,31 +456,34 @@
                     .filter(name => name.length > 0);
                 
                 if (names.length === 0) {
-                    showAlert('No se han introducido nombres. Pega al menos un nombre en la lista para importar.'); // CAMBIO: de alert() a showAlert()
+                    showAlert('No se han introducido nombres. Pega al menos un nombre en la lista para importar.', 'Error de Importación', 'error');
                     return;
                 }
 
-                // Borrar datos de estudiantes antiguos y renderizar los nuevos
-                appData.students = {}; // Borrar estudiantes del objeto de datos
+                // Borrar datos de estudiantes antiguos
+                appData.students = {}; 
                 names.forEach(name => {
                     const studentId = crypto.randomUUID();
-                    appData.students[studentId] = { name: name }; // Añadir nuevos estudiantes
+                    appData.students[studentId] = { name: name }; // Añadir nuevos
                 });
                 
-                renderStudentTable(); // Renderizar la tabla con los nuevos estudiantes
+                renderStudentTable();
                 saveData(); // Guardar la nueva estructura
                 
                 importModal.classList.add('hidden');
                 importModal.classList.remove('flex');
+                showAlert(`${names.length} alumnos importados correctamente.`, 'Importación Completa', 'success');
             });
 
 
             // --- LÓGICA DE EXPORTAR A CSV ---
-            exportButton.addEventListener('click', () => {
+            exportCsvButton.addEventListener('click', () => {
+                saveData(); // Asegurarse de que appData está actualizado
                 const headers = ["#", "Nombre del Alumno/a", "Edad", "Autorización Salida", "Nombres de los Padres", "Móvil de contacto a efectos de comunicación", "Correo Electrónico", "Registro de Llamadas", "Registro de reuniones con los padres o tutores"];
+                
                 const escapeCsvCell = (cell) => {
                     let cellString = String(cell ?? '');
-                    if (cellString.search(/("|,|\n)/g) >= 0) {
+                    if (cellString.search(/("|,|\n|;)/g) >= 0) { // Añadido ';'
                         cellString = `"${cellString.replace(/"/g, '""')}"`;
                     }
                     return cellString;
@@ -502,7 +494,7 @@
                     `Grupo:;${escapeCsvCell(appData.groupName)}`,
                     `Tutor/a:;${escapeCsvCell(appData.tutorName)}`,
                     `Año del curso:;${escapeCsvCell(appData.courseYear)}`,
-                    '' // Línea en blanco para separar
+                    '' 
                 ].join('\n');
 
                 const rows = Object.values(appData.students).map((student, index) => [
@@ -515,9 +507,9 @@
                     student.email,
                     student.llamadas,
                     student.visitas
-                ].map(escapeCsvCell).join(';')); // CAMBIO: de ',' a ';'
+                ].map(escapeCsvCell).join(';')); 
 
-                const csvContent = [headerInfo, headers.join(';'), ...rows].join('\n'); // CAMBIO: de ',' a ';'
+                const csvContent = [headerInfo, headers.join(';'), ...rows].join('\n'); 
                 const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
                 const link = document.createElement("a");
                 link.href = URL.createObjectURL(blob);
@@ -525,6 +517,65 @@
                 link.download = `registro_tutoría_${courseName}.csv`;
                 link.click();
                 URL.revokeObjectURL(link.href);
+            });
+
+            // --- LÓGICA DE GUARDAR/CARGAR DATOS (JSON) ---
+            
+            // NUEVO: Guardar Datos (JSON)
+            saveJsonButton.addEventListener('click', () => {
+                saveData(); // Asegurarse de que appData está actualizado
+                
+                const dataStr = JSON.stringify(appData, null, 2); // null, 2 para formateo "bonito"
+                const blob = new Blob([dataStr], { type: 'application/json' });
+                const link = document.createElement("a");
+                link.href = URL.createObjectURL(blob);
+                const groupName = appData.groupName.replace(/\s/g, '_') || 'tutoria';
+                link.download = `datos_tutoria_${groupName}.json`;
+                link.click();
+                URL.revokeObjectURL(link.href);
+            });
+
+            // NUEVO: Cargar Datos (JSON) - Disparador
+            loadJsonButton.addEventListener('click', () => {
+                jsonFileInput.click(); // Abrir el diálogo de selección de archivo
+            });
+
+            // NUEVO: Cargar Datos (JSON) - Lector
+            jsonFileInput.addEventListener('change', (event) => {
+                const file = event.target.files[0];
+                if (!file) {
+                    return; // No se seleccionó archivo
+                }
+
+                const reader = new FileReader();
+                
+                reader.onload = (e) => {
+                    try {
+                        const parsedData = JSON.parse(e.target.result);
+                        
+                        // Validación simple
+                        if (parsedData && typeof parsedData.students === 'object' && parsedData.hasOwnProperty('tutorName')) {
+                            appData = parsedData;
+                            saveData(); // Guardar en localStorage
+                            loadData(); // Renderizar todo de nuevo
+                            showAlert('Datos cargados y restaurados con éxito.', 'Carga Completa', 'success');
+                        } else {
+                            showAlert('El fichero no tiene la estructura de datos esperada.', 'Error de Fichero', 'error');
+                        }
+                    } catch (err) {
+                        showAlert('Error al leer el fichero. Asegúrate de que es un fichero .json válido.', 'Error de Carga', 'error');
+                        console.error(err);
+                    }
+                };
+                
+                reader.onerror = () => {
+                    showAlert('No se pudo leer el fichero.', 'Error de Lectura', 'error');
+                };
+                
+                reader.readAsText(file);
+
+                // Limpiar el input para permitir cargar el mismo archivo de nuevo
+                event.target.value = null;
             });
 
             // --- LÓGICA PARA MODALES Y RESETEO ---
@@ -546,25 +597,13 @@
             });
 
             // --- INICIALIZACIÓN ---
-            // Listeners para guardar datos de cabecera
             courseYearInput.addEventListener('input', saveData);
             tutorNameInput.addEventListener('input', saveData);
             groupNameInput.addEventListener('input', saveData);
             centerNameInput.addEventListener('input', saveData);
 
-            // Carga inicial
-            loadData();
+            loadData(); // Carga inicial
         });
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
