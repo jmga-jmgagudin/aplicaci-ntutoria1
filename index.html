@@ -46,6 +46,17 @@
             border-color: #fb923c; /* orange-400 */
             box-shadow: 0 0 0 2px #374151, 0 0 0 4px #fb923c;
         }
+        /* Estilo para selects en el modal (para que se vea la flecha) */
+        .form-element-select {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%239ca3af' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.5rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            padding-right: 2.5rem;
+        }
         
         /* Ajustes de la tabla */
         .table-responsive-container { overflow-x: auto; }
@@ -72,20 +83,22 @@
         }
         .add-timestamp-button:hover { background-color: #6b7280; /* bg-gray-500 */ }
 
-        /* NUEVO: Estilo para filas de alumnos inactivos */
+        /* Estilo para filas de alumnos inactivos */
         .student-inactive {
             opacity: 0.5;
             text-decoration: line-through;
-            background-color: #2a3442; /* Un fondo ligeramente distinto */
+            background-color: #2a3442;
         }
-        .student-inactive:hover {
-            opacity: 0.7; /* Aclarar un poco en hover */
-        }
+        .student-inactive:hover { opacity: 0.7; }
 
         /* Modales */
         .modal-backdrop {
             background-color: rgba(17, 24, 39, 0.8);
             backdrop-filter: blur(5px);
+        }
+        .modal-body {
+            max-height: 70vh;
+            overflow-y: auto;
         }
     </style>
 </head>
@@ -98,27 +111,25 @@
             <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                 <div>
                     <h1 class="text-3xl md:text-4xl font-bold text-white mb-4">Asistente de Tutoría Digital</h1>
-                    
-                     <!-- Rejilla de inputs de cabecera MODIFICADA -->
-                     <!-- Usamos sm:grid-cols-2 para definir una base de dos columnas -->
                      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <!-- Tutor y Centro ahora usan sm:col-span-2 para ocupar el ancho completo en pantallas >sm -->
                         <input type="text" id="tutorName" class="form-element sm:col-span-2" placeholder="Nombre del tutor/a...">
                         <input type="text" id="centerName" class="form-element sm:col-span-2" placeholder="Centro...">
-
-                        <!-- Grupo y Año ocupan una columna cada uno, compartiendo una fila -->
                         <input type="text" id="groupName" class="form-element" placeholder="Grupo...">
                         <input type="text" id="courseYear" class="form-element" placeholder="Año del curso...">
                     </div>
                 </div>
                 <!-- Botonera de acciones -->
                 <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mt-4 md:mt-0 self-start md:self-center w-full md:w-auto">
-                    <!-- Fila 1: Importar/Exportar -->
+                    <!-- Fila 1: Añadir/Importar/Exportar -->
                     <div class="flex flex-col sm:flex-row gap-2 w-full">
-                        <button id="import-button" class="w-full sm:w-auto text-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-5 rounded-md transition-colors whitespace-nowrap">
-                            <i class="fas fa-users-cog mr-2"></i> Importar Alumnado
+                         <!-- NUEVO BOTÓN -->
+                        <button id="add-student-button" class="w-full sm:w-auto text-center bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-5 rounded-md transition-colors whitespace-nowrap">
+                            <i class="fas fa-user-plus mr-2"></i> Añadir Alumno
                         </button>
-                        <button id="export-csv-button" class="w-full sm:w-auto text-center bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-5 rounded-md transition-colors whitespace-nowrap">
+                        <button id="import-button" class="w-full sm:w-auto text-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-5 rounded-md transition-colors whitespace-nowrap">
+                            <i class="fas fa-users-cog mr-2"></i> Importar Lista
+                        </button>
+                        <button id="export-csv-button" class="w-full sm:w-auto text-center bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-5 rounded-md transition-colors whitespace-nowrap">
                             <i class="fas fa-file-excel mr-2"></i> Exportar (CSV)
                         </button>
                     </div>
@@ -148,18 +159,17 @@
                         <th class="p-4">Edad</th>
                         <th class="p-4">Autorización Salida</th>
                         <th class="p-4">Nombres de los Padres</th>
-                        <th class="p-4">Móvil de contacto a efectos de comunicación</th>
+                        <th class="p-4">Móvil de contacto</th>
                         <th class="p-4">Correo Electrónico</th>
                         <th class="p-4">Registro de Llamadas</th>
-                        <th class="p-4">Registro de reuniones con los padres o tutores</th>
-                        <th class="p-4">Acciones</th> <!-- NUEVA COLUMNA -->
+                        <th class="p-4">Registro de reuniones</th>
+                        <th class="p-4">Acciones</th>
                     </tr>
                 </thead>
                 <tbody id="student-table-body">
-                    <!-- Fila por defecto -->
                     <tr>
-                        <td colspan="10" class="p-8 text-center text-gray-400"> <!-- Colspan actualizado a 10 -->
-                            Aún no hay alumnado. Usa el botón "Importar Alumnado" para añadir tu lista.
+                        <td colspan="10" class="p-8 text-center text-gray-400">
+                            Aún no hay alumnado. Usa el botón "Importar Lista" o "Añadir Alumno".
                         </td>
                     </tr>
                 </tbody>
@@ -167,13 +177,14 @@
         </main>
     </div>
 
-    <!-- Modales (Importar, Resetear, Alerta) -->
+    <!-- Modales -->
+    
     <!-- Modal de Importación -->
     <div id="import-modal" class="fixed inset-0 z-50 items-center justify-center hidden p-4 modal-backdrop">
         <div class="bg-gray-800 border border-gray-600 rounded-lg shadow-xl w-full max-w-md p-6 relative">
             <h2 class="text-2xl font-bold text-blue-400 mb-4">Importar Lista de Alumnado</h2>
             <p class="text-gray-300 mb-4">Pega tu lista de alumnado aquí (un nombre por línea). Esto reemplazará la lista actual.</p>
-            <textarea id="student-list-input" class="form-element w-full h-48 mb-4" placeholder="Ana García López&#10;Benito Pérez Ruiz&#10;Carla Suárez Martín&#10;..."></textarea>
+            <textarea id="student-list-input" class="form-element w-full h-48 mb-4" placeholder="Ana García López&#10;Benito Pérez Ruiz&#10;..."></textarea>
             <div class="flex justify-end space-x-4">
                 <button id="process-import-button" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-5 rounded-md transition-colors">Importar Lista</button>
                 <button class="modal-close bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-5 rounded-md transition-colors">Cancelar</button>
@@ -184,7 +195,7 @@
     <!-- Modal de confirmación para Resetear -->
     <div id="reset-modal" class="fixed inset-0 z-50 items-center justify-center hidden p-4 modal-backdrop">
         <div class="bg-gray-800 border border-gray-600 rounded-lg shadow-xl w-full max-w-md p-6 relative">
-            <h2 class="text-2xl font-bold text-red-500 mb-4">Confirmar Acción</h2>
+            <h2 class="text-2xl font-bold text-red-500 mb-4">Confirmar Reseteo</h2>
             <p class="text-gray-300 mb-6">¿Estás seguro de que quieres borrar toda la información? Esta acción no se puede deshacer.</p>
             <div class="flex justify-end space-x-4">
                 <button id="confirm-reset-button" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-5 rounded-md transition-colors">Sí, Borrar Todo</button>
@@ -204,6 +215,80 @@
         </div>
     </div>
 
+    <!-- NUEVO: Modal de Añadir Alumno -->
+    <div id="add-student-modal" class="fixed inset-0 z-50 items-center justify-center hidden p-4 modal-backdrop">
+        <div class="bg-gray-800 border border-gray-600 rounded-lg shadow-xl w-full max-w-2xl p-6 relative">
+            <h2 class="text-2xl font-bold text-green-400 mb-6">Añadir Nuevo Alumno/a</h2>
+            
+            <form id="add-student-form">
+                <div class="modal-body p-1"> <!-- Contenedor con scroll -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                        <!-- Columna 1 -->
+                        <div>
+                            <label for="new-student-name" class="block text-sm font-medium text-gray-300 mb-1">Nombre Completo (*)</label>
+                            <input type="text" id="new-student-name" class="form-element" placeholder="Nombre y apellidos..." required>
+                        </div>
+                        <div>
+                            <label for="new-student-tutorNombre" class="block text-sm font-medium text-gray-300 mb-1">Nombres de los Padres/Tutores</label>
+                            <input type="text" id="new-student-tutorNombre" class="form-element" placeholder="Padre/Madre/Tutor...">
+                        </div>
+                        <div>
+                            <label for="new-student-edad" class="block text-sm font-medium text-gray-300 mb-1">Edad</label>
+                            <select id="new-student-edad" class="form-element form-element-select">
+                                <option value="">Seleccionar...</option>
+                                <option value="Menor de edad">Menor de edad</option>
+                                <option value="Mayor de edad">Mayor de edad</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="new-student-tutorMovil" class="block text-sm font-medium text-gray-300 mb-1">Móvil de contacto</label>
+                            <input type="tel" id="new-student-tutorMovil" class="form-element" placeholder="600 000 000...">
+                        </div>
+                        <div>
+                            <label for="new-student-autorizacion" class="block text-sm font-medium text-gray-300 mb-1">Autorización Salida</labe>
+                            <select id="new-student-autorizacion" class="form-element form-element-select">
+                                <option value="">Seleccionar...</option>
+                                <option value="Sí">Sí</option>
+                                <option value="No">No</option>
+                            </select>
+                        </div>
+                         <div>
+                            <label for="new-student-email" class="block text-sm font-medium text-gray-300 mb-1">Correo Electrónico</label>
+                            <input type="email" id="new-student-email" class="form-element" placeholder="email@ejemplo.com...">
+                        </div>
+
+                        <!-- Textareas en ancho completo -->
+                        <div class="md:col-span-2">
+                            <label for="new-student-llamadas" class="block text-sm font-medium text-gray-300 mb-1">Registro de Llamadas</ci>
+                            <textarea id="new-student-llamadas" class="form-element h-24" placeholder="Anotaciones sobre llamadas..."></textarea>
+                        </div>
+                         <div class="md:col-span-2">
+                            <label for="new-student-visitas" class="block text-sm font-medium text-gray-300 mb-1">Registro de Reuniones</label>
+                            <textarea id="new-student-visitas" class="form-element h-24" placeholder="Anotaciones sobre reuniones..."></textarea>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            
+            <div class="flex justify-end space-x-4 mt-6 pt-4 border-t border-gray-700">
+                <button id="save-new-student-button" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-5 rounded-md transition-colors">Guardar Alumno</button>
+                <button class="modal-close bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-5 rounded-md transition-colors">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NUEVO: Modal de confirmación para Eliminar Alumno -->
+    <div id="delete-modal" class="fixed inset-0 z-50 items-center justify-center hidden p-4 modal-backdrop">
+        <div class="bg-gray-800 border border-gray-600 rounded-lg shadow-xl w-full max-w-md p-6 relative">
+            <h2 class="text-2xl font-bold text-red-500 mb-4">Confirmar Eliminación</h2>
+            <p class="text-gray-300 mb-6">¿Estás seguro de que quieres <strong class="text-red-400">eliminar permanentemente</strong> a este alumno y todos sus datos? Esta acción no se puede deshacer.</p>
+            <div class="flex justify-end space-x-4">
+                <button id="confirm-delete-button" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-5 rounded-md transition-colors">Sí, Eliminar</button>
+                <button id="cancel-delete-button" class="modal-close bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-5 rounded-md transition-colors">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Input de fichero oculto para cargar JSON -->
     <input type="file" id="json-file-input" class="hidden" accept=".json">
 
@@ -217,23 +302,32 @@
             const centerNameInput = document.getElementById('centerName');
             const studentTableBody = document.getElementById('student-table-body');
             
-            // Modales
+            // --- Modales ---
             const importModal = document.getElementById('import-modal');
             const resetModal = document.getElementById('reset-modal');
             const alertModal = document.getElementById('alert-modal');
             const alertTitle = document.getElementById('alert-title');
             const alertMessage = document.getElementById('alert-message');
+            // Nuevos Modales
+            const addStudentModal = document.getElementById('add-student-modal');
+            const deleteModal = document.getElementById('delete-modal');
             
-            // Botones
+            // --- Botones ---
             const importButton = document.getElementById('import-button');
             const processImportButton = document.getElementById('process-import-button');
             const studentListInput = document.getElementById('student-list-input');
             const resetButton = document.getElementById('reset-button');
             const confirmResetButton = document.getElementById('confirm-reset-button');
-            const exportCsvButton = document.getElementById('export-csv-button'); // Renombrado
-            const saveJsonButton = document.getElementById('save-json-button'); // NUEVO
-            const loadJsonButton = document.getElementById('load-json-button'); // NUEVO
-            const jsonFileInput = document.getElementById('json-file-input'); // NUEVO
+            const exportCsvButton = document.getElementById('export-csv-button');
+            const saveJsonButton = document.getElementById('save-json-button');
+            const loadJsonButton = document.getElementById('load-json-button');
+            const jsonFileInput = document.getElementById('json-file-input');
+            // Nuevos Botones
+            const addStudentButton = document.getElementById('add-student-button');
+            const saveNewStudentButton = document.getElementById('save-new-student-button');
+            const addStudentForm = document.getElementById('add-student-form');
+            const confirmDeleteButton = document.getElementById('confirm-delete-button');
+            const cancelDeleteButton = document.getElementById('cancel-delete-button'); // ID duplicado, pero se gestiona con .modal-close
 
             // --- DATOS GLOBALES ---
             let appData = {
@@ -243,21 +337,20 @@
                 centerName: '',
                 students: {}
             };
+            let studentIdToDelete = null; // Variable global para saber a quién borrar
 
             // --- LÓGICA DE GUARDADO/CARGA DE DATOS (localStorage) ---
             function saveData() {
-                // Guardar datos de cabecera
                 appData.courseYear = courseYearInput.value;
                 appData.tutorName = tutorNameInput.value;
                 appData.groupName = groupNameInput.value;
                 appData.centerName = centerNameInput.value;
                 
-                // Guardar datos de estudiantes
                 appData.students = {}; // Reiniciar para leer del DOM
                 document.querySelectorAll('#student-table-body tr[data-student-id]').forEach(row => {
                     const studentId = row.dataset.studentId;
                     const studentData = {
-                        name: row.querySelector('[data-field="name"]').textContent.trim(), // Actualizado para leer el nombre
+                        name: row.querySelector('[data-field="name"]').textContent.trim(),
                         edad: row.querySelector('[data-field="edad"]').value,
                         autorizacion: row.querySelector('[data-field="autorizacion"]').value,
                         tutorNombre: row.querySelector('[data-field="tutorNombre"]').value,
@@ -265,7 +358,7 @@
                         email: row.querySelector('[data-field="email"]').value,
                         llamadas: row.querySelector('[data-field="llamadas"]').value,
                         visitas: row.querySelector('[data-field="visitas"]').value,
-                        status: row.dataset.status || 'active' // NUEVO: Guardar el estado
+                        status: row.dataset.status || 'active'
                     };
                     appData.students[studentId] = studentData;
                 });
@@ -278,7 +371,6 @@
                 if (savedData) {
                     try {
                         appData = JSON.parse(savedData);
-                         // Asegurarse de que la estructura base existe
                         if (!appData.students) appData.students = {};
                     } catch (e) {
                         console.error("Error al parsear localStorage, reseteando datos.", e);
@@ -286,13 +378,10 @@
                     }
                 }
 
-                // Cargar datos de cabecera
                 courseYearInput.value = appData.courseYear || '';
                 tutorNameInput.value = appData.tutorName || '';
                 groupNameInput.value = appData.groupName || '';
                 centerNameInput.value = appData.centerName || '';
-
-                // Cargar y renderizar estudiantes
                 renderStudentTable();
             }
 
@@ -300,10 +389,7 @@
             function showAlert(message, title = 'Aviso', type = 'info') {
                 alertTitle.textContent = title;
                 alertMessage.textContent = message;
-                
-                // Resetear colores
                 alertTitle.classList.remove('text-orange-400', 'text-red-500', 'text-green-500');
-
                 if (type === 'error') {
                     alertTitle.classList.add('text-red-500');
                 } else if (type === 'success') {
@@ -311,23 +397,20 @@
                 } else {
                     alertTitle.classList.add('text-orange-400');
                 }
-
                 alertModal.classList.remove('hidden');
                 alertModal.classList.add('flex');
             }
 
             // --- RENDERIZADO DE LA TABLA ---
             function renderStudentTable() {
-                studentTableBody.innerHTML = ''; // Limpiar tabla
-                
-                // Asegurarse de que appData.students no es nulo o undefined
+                studentTableBody.innerHTML = '';
                 const studentIds = appData.students ? Object.keys(appData.students) : [];
 
                 if (studentIds.length === 0) {
                     studentTableBody.innerHTML = `
                         <tr>
-                            <td colspan="10" class="p-8 text-center text-gray-400"> <!-- Colspan actualizado a 10 -->
-                                Aún no hay alumnado. Usa el botón "Importar Alumnado" para añadir tu lista.
+                            <td colspan="10" class="p-8 text-center text-gray-400">
+                                Aún no hay alumnado. Usa el botón "Importar Lista" o "Añadir Alumno".
                             </td>
                         </tr>`;
                     return;
@@ -335,7 +418,6 @@
 
                 studentIds.forEach((studentId, index) => {
                     const studentData = appData.students[studentId];
-                    // Si studentData no es válido, saltar
                     if (!studentData || !studentData.name) {
                          console.warn(`Datos inválidos para el studentId: ${studentId}`);
                         return;
@@ -348,8 +430,6 @@
             function createStudentRow(studentNumber, studentId, name, studentData = {}) {
                 const tr = document.createElement('tr');
                 tr.dataset.studentId = studentId;
-
-                // NUEVO: Aplicar estado (activo/inactivo)
                 const status = studentData.status || 'active';
                 tr.dataset.status = status;
                 tr.className = 'border-b border-gray-700 hover:bg-gray-700/50 transition-colors';
@@ -387,7 +467,7 @@
                         el.innerHTML = options.map(opt => `<option value="${opt}">${opt}</option>`).join('');
                         el.value = value || ''; 
                     }
-                    el.addEventListener('input', saveData); // Guardar en CADA cambio
+                    el.addEventListener('input', saveData);
                     return el;
                 };
                 
@@ -401,7 +481,7 @@
                 const tdName = document.createElement('td');
                 tdName.className = 'p-4 font-medium text-white';
                 tdName.textContent = name;
-                tdName.dataset.field = "name"; // Importante para que saveData lo lea
+                tdName.dataset.field = "name";
                 tr.appendChild(tdName);
 
                 // 2. Edad
@@ -421,20 +501,17 @@
                     td.className = 'p-2';
                     const container = document.createElement('div');
                     container.className = 'textarea-container';
-                    
                     const textarea = document.createElement('textarea');
                     textarea.className = 'form-element h-24';
                     textarea.dataset.field = field;
                     textarea.placeholder = 'Añadir fecha con el botón...';
                     textarea.value = value || '';
                     textarea.addEventListener('input', saveData);
-
                     const button = document.createElement('button');
                     button.className = 'add-timestamp-button';
                     button.title = 'Añadir Fecha y Hora Actual';
                     button.innerHTML = '<i class="fas fa-clock"></i> Añadir Fecha';
                     button.addEventListener('click', () => addTimestamp(textarea));
-                    
                     container.appendChild(textarea);
                     container.appendChild(button);
                     td.appendChild(container);
@@ -446,13 +523,13 @@
                 // 8. Registro de Visitas
                 tr.appendChild(createTimestampTextarea('visitas', studentData.visitas));
                 
-                // 9. NUEVO: Celda de Acciones
+                // 9. Celda de Acciones
                 const tdActions = document.createElement('td');
                 tdActions.className = 'p-2 text-center';
 
+                // Botón de Archivar
                 const archiveButton = document.createElement('button');
                 archiveButton.className = 'text-gray-400 hover:text-orange-400 transition-colors px-2 py-1 rounded-md';
-                
                 if (status === 'active') {
                     archiveButton.innerHTML = '<i class="fas fa-archive fa-lg"></i>';
                     archiveButton.title = 'Archivar alumno';
@@ -460,42 +537,60 @@
                     archiveButton.innerHTML = '<i class="fas fa-undo fa-lg"></i>';
                     archiveButton.title = 'Reactivar alumno';
                 }
-
-                // Añadir listener para el botón
                 archiveButton.addEventListener('click', () => toggleStudentStatus(tr));
-
                 tdActions.appendChild(archiveButton);
+
+                // NUEVO: Botón de Eliminar
+                const deleteButton = document.createElement('button');
+                deleteButton.className = 'text-gray-400 hover:text-red-500 transition-colors px-2 py-1 rounded-md ml-2';
+                deleteButton.innerHTML = '<i class="fas fa-trash-alt fa-lg"></i>';
+                deleteButton.title = 'Eliminar alumno permanentemente';
+                deleteButton.addEventListener('click', () => openDeleteModal(studentId));
+                tdActions.appendChild(deleteButton);
+
                 tr.appendChild(tdActions);
 
                 return tr;
             }
 
-            // --- NUEVA FUNCIÓN: ARCHIVAR/REACTIVAR ALUMNO ---
+            // --- LÓGICA DE ESTADO DEL ALUMNO ---
             function toggleStudentStatus(rowElement) {
                 const currentStatus = rowElement.dataset.status;
                 const newStatus = (currentStatus === 'active') ? 'inactive' : 'active';
                 rowElement.dataset.status = newStatus;
-
-                const button = rowElement.querySelector('button[title*="alumno"]'); // Busca el botón por su título
-
+                const button = rowElement.querySelector('button[title*="Archivar"], button[title*="Reactivar"]');
                 if (newStatus === 'inactive') {
-                    // Archivar: aplicar estilos y cambiar botón
                     rowElement.classList.add('student-inactive');
                     if (button) {
                         button.innerHTML = '<i class="fas fa-undo fa-lg"></i>';
                         button.title = 'Reactivar alumno';
                     }
                 } else {
-                    // Reactivar: quitar estilos y cambiar botón
                     rowElement.classList.remove('student-inactive');
                     if (button) {
                         button.innerHTML = '<i class="fas fa-archive fa-lg"></i>';
                         button.title = 'Archivar alumno';
                     }
                 }
-
-                // Guardar los datos inmediatamente
                 saveData();
+            }
+            
+            // --- NUEVO: LÓGICA DE ELIMINAR ALUMNO ---
+            function openDeleteModal(studentId) {
+                studentIdToDelete = studentId;
+                deleteModal.classList.remove('hidden');
+                deleteModal.classList.add('flex');
+            }
+
+            function deleteStudent() {
+                if (studentIdToDelete) {
+                    delete appData.students[studentIdToDelete];
+                    studentIdToDelete = null; // Resetear
+                    saveData();
+                    renderStudentTable();
+                }
+                deleteModal.classList.add('hidden');
+                deleteModal.classList.remove('flex');
             }
 
             // --- LÓGICA BOTÓN TIMESTAMP ---
@@ -530,39 +625,32 @@
                     .filter(name => name.length > 0);
                 
                 if (names.length === 0) {
-                    showAlert('No se han introducido nombres. Pega al menos un nombre en la lista para importar.', 'Error de Importación', 'error');
+                    showAlert('No se han introducido nombres.', 'Error de Importación', 'error');
                     return;
                 }
-
-                // Borrar datos de estudiantes antiguos
                 appData.students = {}; 
                 names.forEach(name => {
                     const studentId = crypto.randomUUID();
-                    appData.students[studentId] = { name: name }; // Añadir nuevos
+                    appData.students[studentId] = { name: name, status: 'active' }; // Asegurar status
                 });
-                
                 renderStudentTable();
-                saveData(); // Guardar la nueva estructura
-                
+                saveData();
                 importModal.classList.add('hidden');
                 importModal.classList.remove('flex');
                 showAlert(`${names.length} alumnos importados correctamente.`, 'Importación Completa', 'success');
             });
 
-
             // --- LÓGICA DE EXPORTAR A CSV ---
             exportCsvButton.addEventListener('click', () => {
-                saveData(); // Asegurarse de que appData está actualizado
-                const headers = ["#", "Nombre del Alumno/a", "Edad", "Autorización Salida", "Nombres de los Padres", "Móvil de contacto a efectos de comunicación", "Correo Electrónico", "Registro de Llamadas", "Registro de reuniones con los padres o tutores", "Estado"];
-                
+                saveData();
+                const headers = ["#", "Nombre del Alumno/a", "Edad", "Autorización Salida", "Nombres de los Padres", "Móvil de contacto", "Correo Electrónico", "Registro de Llamadas", "Registro de reuniones", "Estado"];
                 const escapeCsvCell = (cell) => {
                     let cellString = String(cell ?? '');
-                    if (cellString.search(/("|,|\n|;)/g) >= 0) { // Añadido ';'
+                    if (cellString.search(/("|,|\n|;)/g) >= 0) {
                         cellString = `"${cellString.replace(/"/g, '""')}"`;
                     }
                     return cellString;
                 };
-
                 const headerInfo = [
                     `Centro:;${escapeCsvCell(appData.centerName)}`,
                     `Grupo:;${escapeCsvCell(appData.groupName)}`,
@@ -570,7 +658,6 @@
                     `Año del curso:;${escapeCsvCell(appData.courseYear)}`,
                     '' 
                 ].join('\n');
-
                 const rows = Object.values(appData.students).map((student, index) => [
                     index + 1,
                     student.name,
@@ -581,9 +668,8 @@
                     student.email,
                     student.llamadas,
                     student.visitas,
-                    student.status || 'active' // Añadir estado al CSV
+                    student.status || 'active'
                 ].map(escapeCsvCell).join(';')); 
-
                 const csvContent = [headerInfo, headers.join(';'), ...rows].join('\n'); 
                 const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
                 const link = document.createElement("a");
@@ -595,12 +681,9 @@
             });
 
             // --- LÓGICA DE GUARDAR/CARGAR DATOS (JSON) ---
-            
-            // NUEVO: Guardar Datos (JSON)
             saveJsonButton.addEventListener('click', () => {
-                saveData(); // Asegurarse de que appData está actualizado
-                
-                const dataStr = JSON.stringify(appData, null, 2); // null, 2 para formateo "bonito"
+                saveData();
+                const dataStr = JSON.stringify(appData, null, 2);
                 const blob = new Blob([dataStr], { type: 'application/json' });
                 const link = document.createElement("a");
                 link.href = URL.createObjectURL(blob);
@@ -610,49 +693,36 @@
                 URL.revokeObjectURL(link.href);
             });
 
-            // NUEVO: Cargar Datos (JSON) - Disparador
             loadJsonButton.addEventListener('click', () => {
-                jsonFileInput.click(); // Abrir el diálogo de selección de archivo
+                jsonFileInput.click();
             });
 
-            // NUEVO: Cargar Datos (JSON) - Lector
             jsonFileInput.addEventListener('change', (event) => {
                 const file = event.target.files[0];
-                if (!file) {
-                    return; // No se seleccionó archivo
-                }
-
+                if (!file) return;
                 const reader = new FileReader();
-                
                 reader.onload = (e) => {
                     try {
                         const parsedData = JSON.parse(e.target.result);
-                        
-                        // Validación simple
                         if (parsedData && typeof parsedData.students === 'object' && parsedData.hasOwnProperty('tutorName')) {
-                            appData = parsedData;
-                            saveData(); // Guardar en localStorage
-                            loadData(); // Renderizar todo de nuevo
+                            appData = parsedData; 
+                            localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+                            loadData(); 
                             showAlert('Datos cargados y restaurados con éxito.', 'Carga Completa', 'success');
                         } else {
                             showAlert('El fichero no tiene la estructura de datos esperada.', 'Error de Fichero', 'error');
                         }
                     } catch (err) {
-                        showAlert('Error al leer el fichero. Asegúrate de que es un fichero .json válido.', 'Error de Carga', 'error');
+                        showAlert('Error al leer el fichero. Asegúrate de que es un .json válido.', 'Error de Carga', 'error');
                         console.error(err);
                     }
                 };
-                
                 reader.onerror = () => {
                     showAlert('No se pudo leer el fichero.', 'Error de Lectura', 'error');
                 };
-                
                 reader.readAsText(file);
-
-                // Limpiar el input para permitir cargar el mismo archivo de nuevo
                 event.target.value = null;
             });
-
 
             // --- LÓGICA PARA MODALES Y RESETEO ---
             resetButton.addEventListener('click', () => {
@@ -665,6 +735,7 @@
                 location.reload();
             });
 
+            // Cierre genérico para todos los modales
             document.querySelectorAll('.modal-close').forEach(button => {
                 button.addEventListener('click', (e) => {
                     e.target.closest('.modal-backdrop').classList.add('hidden');
@@ -672,13 +743,63 @@
                 });
             });
 
-            // --- INICIALIZACIÓN ---
+            // --- INICIALIZACIÓN Y LISTENERS ---
+            // Guardado de cabecera
             courseYearInput.addEventListener('input', saveData);
             tutorNameInput.addEventListener('input', saveData);
             groupNameInput.addEventListener('input', saveData);
             centerNameInput.addEventListener('input', saveData);
 
-            loadData(); // Carga inicial
+            // --- NUEVOS LISTENERS ---
+            // Botón principal "Añadir Alumno"
+            addStudentButton.addEventListener('click', () => {
+                addStudentForm.reset(); // Limpiar formulario
+                addStudentModal.classList.remove('hidden');
+                addStudentModal.classList.add('flex');
+            });
+
+            // Botón "Guardar" dentro del modal de añadir alumno
+            saveNewStudentButton.addEventListener('click', () => {
+                const studentNameInput = document.getElementById('new-student-name');
+                const studentName = studentNameInput.value.trim();
+                
+                if (studentName.length === 0) {
+                    showAlert('El nombre del alumno no puede estar vacío.', 'Error de Validación', 'error');
+                    return;
+                }
+
+                const studentId = crypto.randomUUID();
+                const newStudentData = {
+                    name: studentName,
+                    edad: document.getElementById('new-student-edad').value,
+                    autorizacion: document.getElementById('new-student-autorizacion').value,
+                    tutorNombre: document.getElementById('new-student-tutorNombre').value,
+                    tutorMovil: document.getElementById('new-student-tutorMovil').value,
+                    email: document.getElementById('new-student-email').value,
+                    llamadas: document.getElementById('new-student-llamadas').value,
+                    visitas: document.getElementById('new-student-visitas').value,
+                    status: 'active'
+                };
+
+                appData.students[studentId] = newStudentData;
+                saveData();
+                renderStudentTable();
+                
+                addStudentModal.classList.add('hidden');
+                addStudentModal.classList.remove('flex');
+                showAlert('Alumno añadido correctamente.', 'Éxito', 'success');
+            });
+            
+            // Botones del modal de eliminación
+            confirmDeleteButton.addEventListener('click', deleteStudent); // Llama a la función
+            cancelDeleteButton.addEventListener('click', () => { // El 'cancel' también es un 'modal-close'
+                studentIdToDelete = null; // Resetear por si acaso
+                deleteModal.classList.add('hidden');
+                deleteModal.classList.remove('flex');
+            });
+
+            // Carga inicial de datos
+            loadData();
         });
     </script>
 </body>
