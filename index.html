@@ -327,7 +327,7 @@
             const saveNewStudentButton = document.getElementById('save-new-student-button');
             const addStudentForm = document.getElementById('add-student-form');
             const confirmDeleteButton = document.getElementById('confirm-delete-button');
-            const cancelDeleteButton = document.getElementById('cancel-delete-button'); // ID duplicado, pero se gestiona con .modal-close
+            const cancelDeleteButton = document.getElementById('cancel-delete-button');
 
             // --- DATOS GLOBALES ---
             let appData = {
@@ -340,31 +340,30 @@
             let studentIdToDelete = null; // Variable global para saber a quién borrar
 
             // --- LÓGICA DE GUARDADO/CARGA DE DATOS (localStorage) ---
+            
+            // --- INICIO DE LA CORRECCIÓN ---
+            // saveData ahora es más simple. Solo guarda el objeto appData en localStorage.
+            // La "fuente de la verdad" es SIEMPRE el objeto appData.
             function saveData() {
+                // Guardar datos de cabecera desde los inputs
                 appData.courseYear = courseYearInput.value;
                 appData.tutorName = tutorNameInput.value;
                 appData.groupName = groupNameInput.value;
                 appData.centerName = centerNameInput.value;
                 
-                appData.students = {}; // Reiniciar para leer del DOM
-                document.querySelectorAll('#student-table-body tr[data-student-id]').forEach(row => {
-                    const studentId = row.dataset.studentId;
-                    const studentData = {
-                        name: row.querySelector('[data-field="name"]').textContent.trim(),
-                        edad: row.querySelector('[data-field="edad"]').value,
-                        autorizacion: row.querySelector('[data-field="autorizacion"]').value,
-                        tutorNombre: row.querySelector('[data-field="tutorNombre"]').value,
-                        tutorMovil: row.querySelector('[data-field="tutorMovil"]').value,
-                        email: row.querySelector('[data-field="email"]').value,
-                        llamadas: row.querySelector('[data-field="llamadas"]').value,
-                        visitas: row.querySelector('[data-field="visitas"]').value,
-                        status: row.dataset.status || 'active'
-                    };
-                    appData.students[studentId] = studentData;
-                });
-                
+                // Guardar el objeto de datos completo
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
             }
+
+            // NUEVA FUNCIÓN: Se llama cada vez que un campo de un alumno cambia.
+            // Actualiza el objeto appData y luego llama a saveData.
+            function updateStudentField(studentId, field, value) {
+                if (appData.students[studentId]) {
+                    appData.students[studentId][field] = value;
+                    saveData(); // Guardar el objeto appData actualizado
+                }
+            }
+            // --- FIN DE LA CORRECCIÓN ---
 
             function loadData() {
                 const savedData = localStorage.getItem(STORAGE_KEY);
@@ -402,6 +401,7 @@
             }
 
             // --- RENDERIZADO DE LA TABLA ---
+            // Esta función lee de appData y pinta el HTML
             function renderStudentTable() {
                 studentTableBody.innerHTML = '';
                 const studentIds = appData.students ? Object.keys(appData.students) : [];
@@ -444,6 +444,7 @@
                     return td;
                 };
 
+                // createFormField ahora usa 'updateStudentField' en lugar de 'saveData'
                 const createFormField = (tag, type, field, value) => {
                     const el = document.createElement(tag);
                     el.className = 'form-element';
@@ -467,7 +468,13 @@
                         el.innerHTML = options.map(opt => `<option value="${opt}">${opt}</option>`).join('');
                         el.value = value || ''; 
                     }
-                    el.addEventListener('input', saveData);
+                    // --- CORRECCIÓN ---
+                    // En lugar de llamar a saveData() (que leía todo el DOM),
+                    // llamamos a updateStudentField con los datos específicos.
+                    el.addEventListener('input', (e) => {
+                        updateStudentField(studentId, field, e.target.value);
+                    });
+                    // --- FIN CORRECCIÓN ---
                     return el;
                 };
                 
@@ -484,18 +491,14 @@
                 tdName.dataset.field = "name";
                 tr.appendChild(tdName);
 
-                // 2. Edad
+                // 2-6. Campos de formulario
                 tr.appendChild(createCell(createFormField('select', '', 'edad', studentData.edad)));
-                // 3. Autorización
                 tr.appendChild(createCell(createFormField('select', '', 'autorizacion', studentData.autorizacion)));
-                // 4. Nombre Tutor
                 tr.appendChild(createCell(createFormField('input', 'text', 'tutorNombre', studentData.tutorNombre)));
-                // 5. Móvil Tutor
                 tr.appendChild(createCell(createFormField('input', 'tel', 'tutorMovil', studentData.tutorMovil)));
-                // 6. Email
                 tr.appendChild(createCell(createFormField('input', 'email', 'email', studentData.email)));
 
-                // Función auxiliar para crear textareas con timestamp
+                // createTimestampTextarea también se actualiza para usar 'updateStudentField'
                 const createTimestampTextarea = (field, value) => {
                     const td = document.createElement('td');
                     td.className = 'p-2';
@@ -506,12 +509,23 @@
                     textarea.dataset.field = field;
                     textarea.placeholder = 'Añadir fecha con el botón...';
                     textarea.value = value || '';
-                    textarea.addEventListener('input', saveData);
+                    
+                    // --- CORRECCIÓN ---
+                    textarea.addEventListener('input', (e) => {
+                        updateStudentField(studentId, field, e.target.value);
+                    });
+                    // --- FIN CORRECCIÓN ---
+
                     const button = document.createElement('button');
                     button.className = 'add-timestamp-button';
                     button.title = 'Añadir Fecha y Hora Actual';
                     button.innerHTML = '<i class="fas fa-clock"></i> Añadir Fecha';
-                    button.addEventListener('click', () => addTimestamp(textarea));
+                    
+                    // --- CORRECCIÓN ---
+                    // Pasamos studentId y field a addTimestamp
+                    button.addEventListener('click', () => addTimestamp(textarea, studentId, field));
+                    // --- FIN CORRECCIÓN ---
+
                     container.appendChild(textarea);
                     container.appendChild(button);
                     td.appendChild(container);
@@ -540,7 +554,7 @@
                 archiveButton.addEventListener('click', () => toggleStudentStatus(tr));
                 tdActions.appendChild(archiveButton);
 
-                // NUEVO: Botón de Eliminar
+                // Botón de Eliminar
                 const deleteButton = document.createElement('button');
                 deleteButton.className = 'text-gray-400 hover:text-red-500 transition-colors px-2 py-1 rounded-md ml-2';
                 deleteButton.innerHTML = '<i class="fas fa-trash-alt fa-lg"></i>';
@@ -554,10 +568,13 @@
             }
 
             // --- LÓGICA DE ESTADO DEL ALUMNO ---
+            // Esta función ahora actualiza appData directamente
             function toggleStudentStatus(rowElement) {
+                const studentId = rowElement.dataset.studentId;
                 const currentStatus = rowElement.dataset.status;
                 const newStatus = (currentStatus === 'active') ? 'inactive' : 'active';
                 rowElement.dataset.status = newStatus;
+                
                 const button = rowElement.querySelector('button[title*="Archivar"], button[title*="Reactivar"]');
                 if (newStatus === 'inactive') {
                     rowElement.classList.add('student-inactive');
@@ -572,29 +589,40 @@
                         button.title = 'Archivar alumno';
                     }
                 }
-                saveData();
+                
+                // --- CORRECCIÓN ---
+                // Actualizar el objeto de datos y guardar
+                if (appData.students[studentId]) {
+                    appData.students[studentId].status = newStatus;
+                    saveData();
+                }
+                // --- FIN CORRECCIÓN ---
             }
             
-            // --- NUEVO: LÓGICA DE ELIMINAR ALUMNO ---
+            // --- LÓGICA DE ELIMINAR ALUMNO ---
             function openDeleteModal(studentId) {
                 studentIdToDelete = studentId;
                 deleteModal.classList.remove('hidden');
                 deleteModal.classList.add('flex');
             }
 
+            // Esta función ahora funciona porque saveData() ya no depende del DOM
             function deleteStudent() {
                 if (studentIdToDelete) {
-                    delete appData.students[studentIdToDelete];
-                    studentIdToDelete = null; // Resetear
-                    saveData();
-                    renderStudentTable();
+                    delete appData.students[studentIdToDelete]; // 1. Borrar de appData
+                    studentIdToDelete = null;
+                    renderStudentTable(); // 2. Repintar la tabla (ya sin el alumno)
+                    saveData(); // 3. Guardar el nuevo appData (sin el alumno)
                 }
                 deleteModal.classList.add('hidden');
                 deleteModal.classList.remove('flex');
             }
+            // --- FIN LÓGICA ELIMINAR ---
+
 
             // --- LÓGICA BOTÓN TIMESTAMP ---
-            function addTimestamp(textarea) {
+            // Modificado para aceptar studentId y field, y llamar a updateStudentField
+            function addTimestamp(textarea, studentId, field) {
                 const now = new Date();
                 const day = String(now.getDate()).padStart(2, '0');
                 const month = String(now.getMonth() + 1).padStart(2, '0');
@@ -609,7 +637,13 @@
                     textarea.value = timestamp;
                 }
                 textarea.focus();
-                textarea.dispatchEvent(new Event('input', { bubbles: true }));
+                
+                // --- CORRECCIÓN ---
+                // Actualizar appData directamente en lugar de disparar un evento
+                if (studentId && field) {
+                    updateStudentField(studentId, field, textarea.value);
+                }
+                // --- FIN CORRECCIÓN ---
             }
 
             // --- LÓGICA DE IMPORTACIÓN (Alumnado) ---
@@ -631,10 +665,10 @@
                 appData.students = {}; 
                 names.forEach(name => {
                     const studentId = crypto.randomUUID();
-                    appData.students[studentId] = { name: name, status: 'active' }; // Asegurar status
+                    appData.students[studentId] = { name: name, status: 'active' };
                 });
-                renderStudentTable();
-                saveData();
+                renderStudentTable(); // Repintar
+                saveData(); // Guardar
                 importModal.classList.add('hidden');
                 importModal.classList.remove('flex');
                 showAlert(`${names.length} alumnos importados correctamente.`, 'Importación Completa', 'success');
@@ -642,7 +676,7 @@
 
             // --- LÓGICA DE EXPORTAR A CSV ---
             exportCsvButton.addEventListener('click', () => {
-                saveData();
+                // saveData(); // Ya no es necesario llamar a saveData() aquí, los datos siempre están actualizados
                 const headers = ["#", "Nombre del Alumno/a", "Edad", "Autorización Salida", "Nombres de los Padres", "Móvil de contacto", "Correo Electrónico", "Registro de Llamadas", "Registro de reuniones", "Estado"];
                 const escapeCsvCell = (cell) => {
                     let cellString = String(cell ?? '');
@@ -682,7 +716,7 @@
 
             // --- LÓGICA DE GUARDAR/CARGAR DATOS (JSON) ---
             saveJsonButton.addEventListener('click', () => {
-                saveData();
+                // saveData(); // No es necesario, los datos están al día
                 const dataStr = JSON.stringify(appData, null, 2);
                 const blob = new Blob([dataStr], { type: 'application/json' });
                 const link = document.createElement("a");
@@ -707,7 +741,7 @@
                         if (parsedData && typeof parsedData.students === 'object' && parsedData.hasOwnProperty('tutorName')) {
                             appData = parsedData; 
                             localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
-                            loadData(); 
+                            loadData(); // Carga y repinta desde la nueva appData
                             showAlert('Datos cargados y restaurados con éxito.', 'Carga Completa', 'success');
                         } else {
                             showAlert('El fichero no tiene la estructura de datos esperada.', 'Error de Fichero', 'error');
@@ -750,21 +784,24 @@
             groupNameInput.addEventListener('input', saveData);
             centerNameInput.addEventListener('input', saveData);
 
-            // --- NUEVOS LISTENERS ---
+            // --- LISTENERS DE AÑADIR/ELIMINAR ---
+            
             // Botón principal "Añadir Alumno"
             addStudentButton.addEventListener('click', () => {
-                addStudentForm.reset(); // Limpiar formulario
+                addStudentForm.reset(); 
                 addStudentModal.classList.remove('hidden');
                 addStudentModal.classList.add('flex');
             });
 
             // Botón "Guardar" dentro del modal de añadir alumno
+            // Esta función ahora funciona porque saveData() ya no depende del DOM
             saveNewStudentButton.addEventListener('click', () => {
                 const studentNameInput = document.getElementById('new-student-name');
                 const studentName = studentNameInput.value.trim();
                 
                 if (studentName.length === 0) {
                     showAlert('El nombre del alumno no puede estar vacío.', 'Error de Validación', 'error');
+                    studentNameInput.focus();
                     return;
                 }
 
@@ -781,19 +818,20 @@
                     status: 'active'
                 };
 
-                appData.students[studentId] = newStudentData;
-                saveData();
-                renderStudentTable();
+                appData.students[studentId] = newStudentData; // 1. Añadir a appData
+                renderStudentTable(); // 2. Repintar la tabla (ya con el nuevo alumno)
+                saveData(); // 3. Guardar el nuevo appData (con el nuevo alumno)
                 
                 addStudentModal.classList.add('hidden');
                 addStudentModal.classList.remove('flex');
                 showAlert('Alumno añadido correctamente.', 'Éxito', 'success');
             });
+            // --- FIN LÓGICA AÑADIR ---
             
             // Botones del modal de eliminación
-            confirmDeleteButton.addEventListener('click', deleteStudent); // Llama a la función
-            cancelDeleteButton.addEventListener('click', () => { // El 'cancel' también es un 'modal-close'
-                studentIdToDelete = null; // Resetear por si acaso
+            confirmDeleteButton.addEventListener('click', deleteStudent);
+            cancelDeleteButton.addEventListener('click', () => {
+                studentIdToDelete = null;
                 deleteModal.classList.add('hidden');
                 deleteModal.classList.remove('flex');
             });
