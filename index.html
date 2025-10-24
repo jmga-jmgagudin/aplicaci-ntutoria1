@@ -72,6 +72,16 @@
         }
         .add-timestamp-button:hover { background-color: #6b7280; /* bg-gray-500 */ }
 
+        /* NUEVO: Estilo para filas de alumnos inactivos */
+        .student-inactive {
+            opacity: 0.5;
+            text-decoration: line-through;
+            background-color: #2a3442; /* Un fondo ligeramente distinto */
+        }
+        .student-inactive:hover {
+            opacity: 0.7; /* Aclarar un poco en hover */
+        }
+
         /* Modales */
         .modal-backdrop {
             background-color: rgba(17, 24, 39, 0.8);
@@ -88,10 +98,16 @@
             <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                 <div>
                     <h1 class="text-3xl md:text-4xl font-bold text-white mb-4">Asistente de Tutoría Digital</h1>
-                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
-                        <input type="text" id="tutorName" class="form-element" placeholder="Nombre del tutor/a...">
+                    
+                     <!-- Rejilla de inputs de cabecera MODIFICADA -->
+                     <!-- Usamos sm:grid-cols-2 para definir una base de dos columnas -->
+                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <!-- Tutor y Centro ahora usan sm:col-span-2 para ocupar el ancho completo en pantallas >sm -->
+                        <input type="text" id="tutorName" class="form-element sm:col-span-2" placeholder="Nombre del tutor/a...">
+                        <input type="text" id="centerName" class="form-element sm:col-span-2" placeholder="Centro...">
+
+                        <!-- Grupo y Año ocupan una columna cada uno, compartiendo una fila -->
                         <input type="text" id="groupName" class="form-element" placeholder="Grupo...">
-                        <input type="text" id="centerName" class="form-element" placeholder="Centro...">
                         <input type="text" id="courseYear" class="form-element" placeholder="Año del curso...">
                     </div>
                 </div>
@@ -136,12 +152,13 @@
                         <th class="p-4">Correo Electrónico</th>
                         <th class="p-4">Registro de Llamadas</th>
                         <th class="p-4">Registro de reuniones con los padres o tutores</th>
+                        <th class="p-4">Acciones</th> <!-- NUEVA COLUMNA -->
                     </tr>
                 </thead>
                 <tbody id="student-table-body">
                     <!-- Fila por defecto -->
                     <tr>
-                        <td colspan="9" class="p-8 text-center text-gray-400">
+                        <td colspan="10" class="p-8 text-center text-gray-400"> <!-- Colspan actualizado a 10 -->
                             Aún no hay alumnado. Usa el botón "Importar Alumnado" para añadir tu lista.
                         </td>
                     </tr>
@@ -247,7 +264,8 @@
                         tutorMovil: row.querySelector('[data-field="tutorMovil"]').value,
                         email: row.querySelector('[data-field="email"]').value,
                         llamadas: row.querySelector('[data-field="llamadas"]').value,
-                        visitas: row.querySelector('[data-field="visitas"]').value
+                        visitas: row.querySelector('[data-field="visitas"]').value,
+                        status: row.dataset.status || 'active' // NUEVO: Guardar el estado
                     };
                     appData.students[studentId] = studentData;
                 });
@@ -308,7 +326,7 @@
                 if (studentIds.length === 0) {
                     studentTableBody.innerHTML = `
                         <tr>
-                            <td colspan="9" class="p-8 text-center text-gray-400">
+                            <td colspan="10" class="p-8 text-center text-gray-400"> <!-- Colspan actualizado a 10 -->
                                 Aún no hay alumnado. Usa el botón "Importar Alumnado" para añadir tu lista.
                             </td>
                         </tr>`;
@@ -329,8 +347,15 @@
 
             function createStudentRow(studentNumber, studentId, name, studentData = {}) {
                 const tr = document.createElement('tr');
-                tr.className = 'border-b border-gray-700 hover:bg-gray-700/50 transition-colors';
                 tr.dataset.studentId = studentId;
+
+                // NUEVO: Aplicar estado (activo/inactivo)
+                const status = studentData.status || 'active';
+                tr.dataset.status = status;
+                tr.className = 'border-b border-gray-700 hover:bg-gray-700/50 transition-colors';
+                if (status === 'inactive') {
+                    tr.classList.add('student-inactive');
+                }
 
                 const createCell = (content) => {
                     const td = document.createElement('td');
@@ -421,7 +446,56 @@
                 // 8. Registro de Visitas
                 tr.appendChild(createTimestampTextarea('visitas', studentData.visitas));
                 
+                // 9. NUEVO: Celda de Acciones
+                const tdActions = document.createElement('td');
+                tdActions.className = 'p-2 text-center';
+
+                const archiveButton = document.createElement('button');
+                archiveButton.className = 'text-gray-400 hover:text-orange-400 transition-colors px-2 py-1 rounded-md';
+                
+                if (status === 'active') {
+                    archiveButton.innerHTML = '<i class="fas fa-archive fa-lg"></i>';
+                    archiveButton.title = 'Archivar alumno';
+                } else {
+                    archiveButton.innerHTML = '<i class="fas fa-undo fa-lg"></i>';
+                    archiveButton.title = 'Reactivar alumno';
+                }
+
+                // Añadir listener para el botón
+                archiveButton.addEventListener('click', () => toggleStudentStatus(tr));
+
+                tdActions.appendChild(archiveButton);
+                tr.appendChild(tdActions);
+
                 return tr;
+            }
+
+            // --- NUEVA FUNCIÓN: ARCHIVAR/REACTIVAR ALUMNO ---
+            function toggleStudentStatus(rowElement) {
+                const currentStatus = rowElement.dataset.status;
+                const newStatus = (currentStatus === 'active') ? 'inactive' : 'active';
+                rowElement.dataset.status = newStatus;
+
+                const button = rowElement.querySelector('button[title*="alumno"]'); // Busca el botón por su título
+
+                if (newStatus === 'inactive') {
+                    // Archivar: aplicar estilos y cambiar botón
+                    rowElement.classList.add('student-inactive');
+                    if (button) {
+                        button.innerHTML = '<i class="fas fa-undo fa-lg"></i>';
+                        button.title = 'Reactivar alumno';
+                    }
+                } else {
+                    // Reactivar: quitar estilos y cambiar botón
+                    rowElement.classList.remove('student-inactive');
+                    if (button) {
+                        button.innerHTML = '<i class="fas fa-archive fa-lg"></i>';
+                        button.title = 'Archivar alumno';
+                    }
+                }
+
+                // Guardar los datos inmediatamente
+                saveData();
             }
 
             // --- LÓGICA BOTÓN TIMESTAMP ---
@@ -479,7 +553,7 @@
             // --- LÓGICA DE EXPORTAR A CSV ---
             exportCsvButton.addEventListener('click', () => {
                 saveData(); // Asegurarse de que appData está actualizado
-                const headers = ["#", "Nombre del Alumno/a", "Edad", "Autorización Salida", "Nombres de los Padres", "Móvil de contacto a efectos de comunicación", "Correo Electrónico", "Registro de Llamadas", "Registro de reuniones con los padres o tutores"];
+                const headers = ["#", "Nombre del Alumno/a", "Edad", "Autorización Salida", "Nombres de los Padres", "Móvil de contacto a efectos de comunicación", "Correo Electrónico", "Registro de Llamadas", "Registro de reuniones con los padres o tutores", "Estado"];
                 
                 const escapeCsvCell = (cell) => {
                     let cellString = String(cell ?? '');
@@ -506,7 +580,8 @@
                     student.tutorMovil,
                     student.email,
                     student.llamadas,
-                    student.visitas
+                    student.visitas,
+                    student.status || 'active' // Añadir estado al CSV
                 ].map(escapeCsvCell).join(';')); 
 
                 const csvContent = [headerInfo, headers.join(';'), ...rows].join('\n'); 
@@ -578,6 +653,7 @@
                 event.target.value = null;
             });
 
+
             // --- LÓGICA PARA MODALES Y RESETEO ---
             resetButton.addEventListener('click', () => {
                 resetModal.classList.remove('hidden');
@@ -607,3 +683,4 @@
     </script>
 </body>
 </html>
+
